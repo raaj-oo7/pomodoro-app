@@ -1,38 +1,528 @@
-.App {
-  text-align: center;
+@import url("https://fonts.googleapis.com/css2?family=Kumbh+Sans:wght@300;400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@700&display=swap");
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+:root {
+  --accent-color: #5666F4;
+  --background-body: #1e213f;
+  --timer-text: #525259;
+  --text: #FEFEFE;
+  --text-dark: #1e213f;
+  --background-preferences: #ffffff;
+  --input-background: #eff1fa;
+  --background-timer: #161932;
+  --settings-heading: #161932;
+  --default-accent: #256d8e;
+  --blue-accent: #70f3f8;
+  --purple-accent: #d881f8;
+
+  --font-current: "Kumbh Sans", sans-serif;
+  --font-default: "Kumbh Sans", sans-serif;
+  --font-roboto-slab: "Roboto Slab", serif;
+  --font-space-mono: "Space Mono", monospace;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+html,
+body {
+  height: 100%;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+body {
+  display: flex;
+  justify-content: center;
+  background-image: url(../public/Background.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.pomodoro-app {
   display: flex;
   flex-direction: column;
   align-items: center;
+  height: 100%;
+  font-family: var(--font-current);
+  padding: 0 30px;
+  border-left: 5px solid #ffffff;
+  border-right: 5px solid #ffffff;
+  background-color: #272730;
+}
+
+h1 {
+  font-family: "Kumbh Sans", sans-serif;
+  color: var(--text);
+  text-align: center;
+  font-style: normal;
+  font-weight: bold;
+  font-size: 24px;
+  line-height: 24px;
+  margin-top: 30px;
+  margin-bottom: 5px;
+}
+
+.pomodoro-progress {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  margin-bottom: 60px;
+}
+
+.pomodoro-check-button {
+  height: 15px;
+  width: 15px;
+  border-radius: 90%;
+  border: none;
+  background-color: #5767F5;
+}
+
+.completed .fa-check {
+  color: #ffffff;
+}
+
+.timer {
+  display: flex;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  align-items: center;
+  flex-shrink: 0;
+  width: 350px;
+  height: 350px;
+  border-radius: 90%;
+  cursor: pointer;
 }
 
-.App-link {
-  color: #61dafb;
+.timer:active {
+  transform: scale(0.98);
 }
 
-@keyframes App-logo-spin {
+.timer__display {
+  height: 100%;
+  width: 100%;
+  padding: 11px;
+  border-radius: 90%;
+  background: #272730;
+}
+
+.display__failed-message,
+.display__start-pause {
+  font-family: var(--font-default);
+  font-weight: bold;
+  font-size: 16px;
+  background-color: transparent;
+  border: 0;
+  color: var(--text);
+  line-height: 16px;
+  letter-spacing: 5px;
+  margin-right: -15px;
+  transition: transform 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.display__start-pause {
+  margin-top: 8px;
+}
+
+.display__failed-message {
+  margin-top: 35%;
+  color: #FD6C7A;
+}
+
+.pomodoro-app__preferences {
+  margin: 30px;
+  background: none;
+  border: 0;
+  transition: transform 0.15s ease-in-out;
+  cursor: pointer;
+}
+
+.preferences {
+  z-index: 200;
+  position: fixed;
+  display: none;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fade {
   from {
-    transform: rotate(0deg);
+    opacity: 0%;
   }
+
   to {
-    transform: rotate(360deg);
+    opacity: 100%;
   }
+}
+
+.preferences--visible {
+  display: block;
+  animation-name: fade;
+  animation-timing-function: ease-in;
+  animation-duration: 0.15s;
+}
+
+.preferences__pane {
+  top: 46px;
+  width: 327px;
+  height: 549px;
+  background: var(--background-preferences);
+  border-radius: 15px;
+
+  position: relative;
+  margin: auto;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  transition: 3.25s all ease-in-out;
+}
+
+.preferences__pane h2 {
+  padding: 24px 0 28px 24px;
+  border-bottom: 1px solid #e3e1e1;
+  font-family: var(--font-default);
+  font-style: normal;
+  font-weight: bold;
+  font-size: 20px;
+  line-height: 20px;
+  color: var(--settings-heading);
+}
+
+.pane__close-preferences {
+  border: none;
+  background: none;
+  position: absolute;
+  right: 24px;
+  top: 19px;
+  color: var(--background-body);
+  opacity: 0.5;
+  font-size: 24px;
+  transition: transform 0.15s ease-in-out;
+}
+
+.pane__close-preferences:hover {
+  transform: scale(1.65);
+  cursor: pointer;
+}
+
+h3 {
+  width: 100%;
+  text-align: center;
+  font-family: var(--font-default);
+  font-style: normal;
+  font-weight: bold;
+  font-size: 11px;
+  line-height: 11px;
+  text-transform: uppercase;
+  text-align: center;
+  letter-spacing: 4.23077px;
+  color: var(--settings-heading);
+}
+
+.pane__time-settings,
+.pane__color-preference {
+  margin-top: 28px;
+}
+
+.time-settings__form {
+  margin: 18px 24px 24px 23px;
+  display: grid;
+  grid-template-columns: 50% 50%;
+  align-items: center;
+  row-gap: 8px;
+}
+
+label {
+  font-family: var(--font-default);
+  font-style: normal;
+  font-weight: bold;
+  font-size: 12px;
+  line-height: 12px;
+  color: var(--text-dark);
+  mix-blend-mode: normal;
+  opacity: 0.4;
+}
+
+input {
+  width: 140px;
+  height: 40px;
+  padding-left: 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--input-background);
+  font-family: var();
+  font-style: normal;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 14px;
+  color: var(--text-dark);
+}
+
+.pane__color-preference input[type="radio"],
+.pane__font-preference input[type="radio"] {
+  opacity: 0;
+  position: fixed;
+  width: 0;
+}
+
+.pane__color-preference input[type="radio"]+label,
+.pane__font-preference input[type="radio"]+label {
+  opacity: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.25s ease-in-out, background-color 0.25s ease-in-out;
+  cursor: pointer;
+}
+
+.pane__color-preference input[type="radio"]+label:hover,
+.pane__font-preference input[type="radio"]+label:hover {
+  transform: scale(1.1);
+}
+
+.pane__font-preference,
+.pane__color-preference {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 24px 0 24px 0;
+  margin: 0 24px 0 24px;
+  border-width: 1px 0 1px 0;
+  border-style: solid;
+  border-color: #e3e1e1;
+}
+
+.pane__color-preference {
+  border: none;
+}
+
+.font-preference__kumbh,
+.font-preference__roboto,
+.font-preference__space,
+.color-preference__default,
+.color-preference__blue,
+.color-preference__purple {
+  width: 40px;
+  height: 40px;
+  margin: 18px 8px 0 8px;
+  border: none;
+  border-radius: 90%;
+  font-size: 15px;
+}
+
+.font-preference__kumbh,
+.font-preference__roboto,
+.font-preference__space {
+  background: var(--input-background);
+  color: var(--text-dark);
+}
+
+.pane__font-preference input[type="radio"]:checked+label {
+  background: var(--settings-heading);
+  color: #fff;
+}
+
+.pane__font-preference input[type="radio"]:hover+label {
+  background: var(--settings-heading);
+  color: #fff;
+  opacity: 0.9;
+}
+
+.font-preference__kumbh {
+  font-family: var(--font-default);
+  font-weight: bold;
+  padding-top: 5px;
+}
+
+.font-preference__roboto {
+  font-family: var(--font-roboto-slab);
+  font-weight: normal;
+}
+
+.font-preference__space {
+  font-family: var(--font-space-mono);
+  font-weight: bold;
+}
+
+.color-preference__default {
+  background-color: var(--default-accent);
+}
+
+.color-preference__blue {
+  background-color: var(--blue-accent);
+}
+
+.color-preference__purple {
+  background-color: var(--purple-accent);
+}
+
+.pane__color-preference input[type="radio"]:checked+label {
+  background-image: url("data:image/svg+xml,%3Csvg width='15' height='11' viewBox='0 0 15 11' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5.5L4.95263 9.45263L13.4053 1' stroke='%23161932' stroke-width='2'/%3E%3C/svg%3E%0A");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.pane__color-preference input[type="radio"]:hover+label {
+  background-image: url("data:image/svg+xml,%3Csvg width='15' height='11' viewBox='0 0 15 11' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5.5L4.95263 9.45263L13.4053 1' stroke='%23161932' stroke-width='2'/%3E%3C/svg%3E%0A");
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.pane__apply-row {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.pane__apply-preferences {
+  width: 140px;
+  height: 53px;
+  padding: 0;
+  border-radius: 26.5px;
+  background-color: var(--default-accent);
+  font-family: Kumbh Sans;
+  font-weight: bold;
+  font-size: 16px;
+  color: #ffffff;
+  transition: transform 0.15s ease-in-out;
+  cursor: pointer;
+}
+
+.start-new-timer {
+  padding: 20px 35px;
+  background-color: #383840;
+  color: var(--text);
+  border: none;
+  border-radius: 35px;
+  font-size: 18px;
+}
+
+.reset-button {
+  width: 140px;
+  height: 53px;
+  padding: 0;
+  border-radius: 26.5px;
+  border: none;
+  background-color: #383840;
+  font-family: Kumbh Sans;
+  font-weight: bold;
+  font-size: 16px;
+  color: #ffffff;
+}
+
+@media screen and (min-width: 600px) {
+  h1 {
+    font-size: 32px;
+    line-height: 32px;
+    color: var(--text);
+
+  }
+
+  .controls {
+    width: 373px;
+    margin: 55px 0 45px 0;
+  }
+
+  .controls__button {
+    font-size: 14px;
+  }
+
+  .timer {
+    width: 410px;
+    height: 410px;
+  }
+
+  .pane__close-preferences {
+    right: 36px;
+    top: 39px;
+    font-size: 28px;
+  }
+
+  .preferences__pane {
+    top: 267px;
+    width: 540px;
+    height: 490px;
+    border-radius: 25px;
+  }
+
+  .preferences__pane h2 {
+    padding: 34px 0 31px 40px;
+    font-size: 28px;
+    line-height: 28px;
+  }
+
+  .time-settings__form {
+    margin: 24px 40px 24px 40px;
+  }
+
+  .pane__font-preference,
+  .pane__color-preference {
+    margin: 0 40px 0 40px;
+  }
+
+  .pane__time-settings h3 {
+    margin: 24px 40px 22px 40px;
+  }
+
+  .pane__time-settings h3,
+  .pane__font-preference h3,
+  .pane__color-preference h3 {
+    text-align: left;
+    font-size: 13px;
+    line-height: 13px;
+    letter-spacing: 5px;
+  }
+
+  .pane__font-preference h3,
+  .pane__color-preference h3 {
+    width: 300px;
+    margin-top: 18px;
+  }
+
+  .font-preference__kumbh,
+  .font-preference__roboto,
+  .font-preference__space,
+  .color-preference__default,
+  .color-preference__blue,
+  .color-preference__purple {
+    margin: 0 8px 0 8px;
+  }
+
+  .font-preference__space,
+  .color-preference__purple {
+    margin: 0 0 0 8px;
+  }
+
+  .time-settings__form {
+    margin: 18px 40px 24px 40px;
+    display: grid;
+    grid-template-columns: auto auto auto;
+    grid-template-rows: 12px 48px;
+    column-gap: 22px;
+  }
+
+  label {
+    grid-row: 1;
+  }
+
+  input {
+    grid-row: 2;
+  }
+}
+
+@media screen and (min-width: 769px) {
+  .preferences__pane {
+    top: 165px;
+  }
+}
+
+.pomodoro-check-button.focus-lost {
+  background-color: red;
+}
+
+.pomodoro-check-button.focus-lost i {
+  color: white;
 }
