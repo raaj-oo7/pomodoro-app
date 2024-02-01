@@ -1,0 +1,85 @@
+import React, { useState, useEffect } from 'react';
+import { CircularProgressbarWithChildren, buildStyles } from 'react-circular-progressbar';
+import 'react-circular-progressbar/dist/styles.css';
+import tickSound from '../Sounds/startTimer.mp3';
+
+const TimerDisplay = ({
+    timerMode,
+    percentage,
+    timeLeft,
+    isActive,
+    setIsActive,
+    buttonText,
+}) => {
+    const [pageVisible, setPageVisible] = useState(!document.hidden);
+    const [focusLostOnce, setFocusLostOnce] = useState(false); 
+    const [red, setRed] = useState(false);
+    const [visibilityMessage, setVisibilityMessage] = useState('');
+
+    // Play tick sound on each timer update
+    useEffect(() => {
+        const tickInterval = setInterval(() => {
+            if (isActive && timeLeft !== '0:00' && pageVisible) {
+                const audio = new Audio(tickSound);
+                audio.play();
+            }
+        }, 1000);
+
+        return () => clearInterval(tickInterval);
+    }, [isActive, timeLeft, pageVisible]);
+
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            setRed(true);
+            setVisibilityMessage('FOCUS LOST!');
+            if (focusLostOnce) {
+                setPageVisible(!document.hidden);
+            }
+        };
+
+        window.addEventListener('blur', handleVisibilityChange);
+
+        return () => {
+            window.removeEventListener('blur', handleVisibilityChange);
+        };
+    }, [focusLostOnce]);
+
+    const handleClick = (event) => {
+        if (timeLeft === '0:00' || !pageVisible) {
+            return null;
+        }
+        setIsActive(!isActive);
+    };
+
+    let timesUpMsg = timerMode === 'pomo' ? 'Time for a break' : 'Back to work!';
+    let timeText = timeLeft === '0:00' ? timesUpMsg : timeLeft;
+    let textSize = timeLeft === '0:00' ? '12px' : '28px';
+    let displayMessage = timerMode === 'pomo' ? 'WORK TIME' : 'ENJOY YOUR BREAK';
+    let progressBarColor = red ? '#FD6C7A' : 'var(--accent-color)';
+
+    return (
+        <div className="timer" onClick={handleClick}>
+            <div className="timer__display">
+                <CircularProgressbarWithChildren
+                    value={percentage}
+                    text={timeText}
+                    strokeWidth={5}
+                    styles={buildStyles({
+                        pathTransitionDuration: 0.9,
+                        pathColor: progressBarColor,
+                        textColor: 'var(--timer-text)',
+                        dominantBaseline: 'unset',
+                        textSize: textSize,
+                        fontFamily: 'var(--font-current)',
+                        trailColor: '#303038',
+                    })}
+                >
+                    <p className="display__failed-message">{visibilityMessage}</p>
+                    <p className="display__start-pause">{displayMessage}</p>
+                </CircularProgressbarWithChildren>
+            </div>
+        </div>
+    );
+};
+
+export default TimerDisplay;
