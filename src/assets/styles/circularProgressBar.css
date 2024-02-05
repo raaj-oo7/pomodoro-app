@@ -1,0 +1,44 @@
+/* CircularProgressBar.css */
+.circular-progress {
+    position: relative;
+    width: 200px; /* Adjust width as needed */
+    height: 200px; /* Adjust height as needed */
+}
+
+.progress-ring {
+    width: 100%;
+    height: 100%;
+    transform: rotate(90deg);
+}
+
+.progress-ring__circle {
+    transition: stroke-dashoffset 0.5s ease;
+    transform-origin: 50% 50%;
+    transform: translate(5px, 5px);
+}
+
+.progress-ring__background {
+    stroke: #ccc;
+}
+
+.progress-ring__progress {
+    stroke: #FD6C7A;
+}
+
+.progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 24px;
+    font-weight: bold;
+    color: #000; /* Adjust text color as needed */
+}
+
+.progress-children {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}

@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import Header from './components/header';
-import TimerDisplay from './components/timerDisplay';
+import TimerDisplay from './components/TimerDisplay';
 import Button from './components/Button';
 import Settings from './components/Settings';
-import RenderButtons from './components/RenderButton';
-import resetSound from './Sounds/slide.mp3';
+import RenderButtons from './components/CheckPomodoroButtons';
+import resetSound from './assets/audio/slide.mp3';
 import '@fortawesome/fontawesome-free/css/all.css';
 
 function App() {
@@ -160,8 +159,7 @@ function App() {
 
   return (
     <div className="pomodoro-app">
-      <Header title="Pomodoro Timer" />
-      <RenderButtons completedPomodoros={completedPomodoros} handlePomodoroCheck={handlePomodoroCheck} />
+      <header><h1>Pomodoro Timer</h1></header>
       <TimerDisplay
         timerMode={timerMode}
         percentage={calcPercentage()}

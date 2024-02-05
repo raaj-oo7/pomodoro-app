@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { CircularProgressbarWithChildren, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
-import tickSound from '../Sounds/startTimer.mp3';
+import tickSound from '../assets/audio/startTimer.mp3';
+import CheckPomodoroButtons from '../components/CheckPomodoroButtons';
 
 const TimerDisplay = ({
     timerMode,
@@ -9,14 +10,15 @@ const TimerDisplay = ({
     timeLeft,
     isActive,
     setIsActive,
-    buttonText,
+    resetTimer
 }) => {
     const [pageVisible, setPageVisible] = useState(!document.hidden);
-    const [focusLostOnce, setFocusLostOnce] = useState(false); 
+    const [focusLost, setFocusLost] = useState(false);
     const [red, setRed] = useState(false);
     const [visibilityMessage, setVisibilityMessage] = useState('');
+    const [isBreakTime, setIsBreakTime] = useState(timerMode === 'break'); 
+    const [completedPomodoros, setCompletedPomodoros] = useState(Array(5).fill(false));
 
-    // Play tick sound on each timer update
     useEffect(() => {
         const tickInterval = setInterval(() => {
             if (isActive && timeLeft !== '0:00' && pageVisible) {
@@ -30,10 +32,11 @@ const TimerDisplay = ({
 
     useEffect(() => {
         const handleVisibilityChange = () => {
-            setRed(true);
-            setVisibilityMessage('FOCUS LOST!');
-            if (focusLostOnce) {
-                setPageVisible(!document.hidden);
+            if (isActive && timerMode === 'pomo' && !isBreakTime) {  // it work if pause time and change tab don't lost focus
+                setRed(true);
+                setVisibilityMessage('FOCUS LOST!');
+                setFocusLost(true);
+                setIsActive(false);
             }
         };
 
@@ -42,14 +45,31 @@ const TimerDisplay = ({
         return () => {
             window.removeEventListener('blur', handleVisibilityChange);
         };
-    }, [focusLostOnce]);
+    }, [timerMode, setIsActive, isBreakTime, isActive]);
 
-    const handleClick = (event) => {
-        if (timeLeft === '0:00' || !pageVisible) {
+    const handleClick = () => {
+        if (timeLeft === '0:00' || !pageVisible || focusLost) {
             return null;
         }
         setIsActive(!isActive);
     };
+
+
+    const handlePomodoroCheck = (index) => {
+        // Allow checking off only the last completed pomodoro
+        if (index === completedPomodoros.filter(Boolean).length - 1) {
+            const updatedPomodoros = [...completedPomodoros];
+            updatedPomodoros[index] = !updatedPomodoros[index];
+            setCompletedPomodoros(updatedPomodoros);
+        }
+    };
+
+    useEffect(() => {
+        if (resetTimer) {
+            setRed(false); // Resetting red color
+            setIsBreakTime(timerMode === 'break'); // Reset isBreakTime when timer resets
+        }
+    }, [resetTimer, timerMode]);
 
     let timesUpMsg = timerMode === 'pomo' ? 'Time for a break' : 'Back to work!';
     let timeText = timeLeft === '0:00' ? timesUpMsg : timeLeft;
@@ -58,25 +78,29 @@ const TimerDisplay = ({
     let progressBarColor = red ? '#FD6C7A' : 'var(--accent-color)';
 
     return (
-        <div className="timer" onClick={handleClick}>
-            <div className="timer__display">
-                <CircularProgressbarWithChildren
-                    value={percentage}
-                    text={timeText}
-                    strokeWidth={5}
-                    styles={buildStyles({
-                        pathTransitionDuration: 0.9,
-                        pathColor: progressBarColor,
-                        textColor: 'var(--timer-text)',
-                        dominantBaseline: 'unset',
-                        textSize: textSize,
-                        fontFamily: 'var(--font-current)',
-                        trailColor: '#303038',
-                    })}
-                >
-                    <p className="display__failed-message">{visibilityMessage}</p>
-                    <p className="display__start-pause">{displayMessage}</p>
-                </CircularProgressbarWithChildren>
+        <div className='main-display'>
+            <CheckPomodoroButtons focusLost={focusLost} completedPomodoros={completedPomodoros} handlePomodoroCheck={handlePomodoroCheck} />
+            <div className="timer" onClick={handleClick}>
+                <div className="timer__display">
+                    <CircularProgressbarWithChildren
+                        value={percentage}
+                        text={timeText}
+                        strokeWidth={5}
+                        styles={buildStyles({
+                            pathTransitionDuration: 0.9,
+                            pathColor: progressBarColor,
+                            textColor: 'var(--timer-text)',
+                            dominantBaseline: 'unset',
+                            textSize: textSize,
+                            fontFamily: 'var(--font-current)',
+                            trailColor: '#303038',
+                        })}
+                    >
+                        <p className="display__failed-message">{visibilityMessage}</p>
+                        <p className="display__start-pause">{displayMessage}</p>
+                    </CircularProgressbarWithChildren>
+                </div>
+
             </div>
         </div>
     );
