@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { CircularProgressbarWithChildren, buildStyles } from 'react-circular-progressbar';
-import 'react-circular-progressbar/dist/styles.css';
 import tickSound from '../assets/audio/startTimer.mp3';
+import '../App.css';
 
 const TimerDisplay = ({
     timerMode,
@@ -9,7 +8,7 @@ const TimerDisplay = ({
     timeLeft,
     isActive,
     setIsActive,
-    resetState 
+    resetState
 }) => {
     const [pageVisible, setPageVisible] = useState(!document.hidden);
     const [focusLost, setFocusLost] = useState(false);
@@ -62,33 +61,49 @@ const TimerDisplay = ({
 
     let timesUpMsg = timerMode === 'pomo' ? 'Time for a break' : 'Back to work!';
     let timeText = timeLeft === '0:00' ? timesUpMsg : timeLeft;
-    let textSize = timeLeft === '0:00' ? '12px' : '28px';
     let displayMessage = timerMode === 'pomo' ? 'WORK TIME' : 'ENJOY YOUR BREAK';
     let progressBarColor = red ? '#FD6C7A' : 'var(--accent-color)';
 
-    return (
-        <div className='main-display'>
-            <div className="timer" onClick={handleClick}>
-                <div className="timer__display">
-                    <CircularProgressbarWithChildren
-                        value={percentage}
-                        text={timeText}
-                        strokeWidth={5}
-                        styles={buildStyles({
-                            pathTransitionDuration: 0.8,
-                            pathColor: progressBarColor,
-                            textColor: 'var(--timer-text)',
-                            dominantBaseline: 'unset',
-                            textSize: textSize,
-                            fontFamily: 'var(--font-current)',
-                            trailColor: '#303038',
-                        })}
-                    >
-                        <p className="display__failed-message">{visibilityMessage}</p>
-                        <p className="display__start-pause">{displayMessage}</p>
-                    </CircularProgressbarWithChildren>
-                </div>
+    const circumference = 2 * Math.PI * 42;
+    const dashOffset = ((100 - percentage) / 100) * circumference;
 
+    return (
+        <div className="timer" onClick={handleClick}>
+            <div className="timer__display">
+                <svg className="circular-progress" viewBox="0 0 100 100">
+                    <circle
+                        className="circular-progress__background"
+                        r="42"
+                        cx="50"
+                        cy="50"
+                        stroke="var(--stroke-trail-color)"
+                        strokeWidth="5"
+                    />
+                    <circle
+                        className="circular-progress__foreground"
+                        r="42"
+                        cx="50"
+                        cy="50"
+                        style={{
+                            strokeDasharray: circumference,
+                            strokeDashoffset: dashOffset,
+                            stroke: progressBarColor,
+                            strokeWidth: '5',
+                            transform: 'rotate(-90deg)',
+                            transformOrigin: 'center'
+                        }}
+                    />
+                    <text
+                        className="circular-progress__text"
+                        x="50%"
+                        y="50%"
+                        textAnchor="middle"
+                    >
+                        {timeText}
+                    </text>
+                </svg>
+                <p className="display__start-pause">{displayMessage}</p>
+                <p className="display__failed-message">{visibilityMessage}</p>
             </div>
         </div>
     );
