@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { CircularProgressbarWithChildren, buildStyles } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import tickSound from '../assets/audio/startTimer.mp3';
-import CheckPomodoroButtons from '../components/CheckPomodoroButtons';
 
 const TimerDisplay = ({
     timerMode,
@@ -10,14 +9,13 @@ const TimerDisplay = ({
     timeLeft,
     isActive,
     setIsActive,
-    resetTimer
+    resetState 
 }) => {
     const [pageVisible, setPageVisible] = useState(!document.hidden);
     const [focusLost, setFocusLost] = useState(false);
     const [red, setRed] = useState(false);
     const [visibilityMessage, setVisibilityMessage] = useState('');
-    const [isBreakTime, setIsBreakTime] = useState(timerMode === 'break'); 
-    const [completedPomodoros, setCompletedPomodoros] = useState(Array(5).fill(false));
+    const [isBreakTime, setIsBreakTime] = useState(timerMode === 'break');
 
     useEffect(() => {
         const tickInterval = setInterval(() => {
@@ -32,7 +30,7 @@ const TimerDisplay = ({
 
     useEffect(() => {
         const handleVisibilityChange = () => {
-            if (isActive && timerMode === 'pomo' && !isBreakTime) {  // it work if pause time and change tab don't lost focus
+            if (isActive && timerMode === 'pomo' && !isBreakTime) {
                 setRed(true);
                 setVisibilityMessage('FOCUS LOST!');
                 setFocusLost(true);
@@ -47,29 +45,20 @@ const TimerDisplay = ({
         };
     }, [timerMode, setIsActive, isBreakTime, isActive]);
 
+    useEffect(() => {
+        if (resetState) {
+            setRed(false);
+            setFocusLost(false);
+            setVisibilityMessage('');
+        }
+    }, [resetState]);
+
     const handleClick = () => {
         if (timeLeft === '0:00' || !pageVisible || focusLost) {
             return null;
         }
         setIsActive(!isActive);
     };
-
-
-    const handlePomodoroCheck = (index) => {
-        // Allow checking off only the last completed pomodoro
-        if (index === completedPomodoros.filter(Boolean).length - 1) {
-            const updatedPomodoros = [...completedPomodoros];
-            updatedPomodoros[index] = !updatedPomodoros[index];
-            setCompletedPomodoros(updatedPomodoros);
-        }
-    };
-
-    useEffect(() => {
-        if (resetTimer) {
-            setRed(false); // Resetting red color
-            setIsBreakTime(timerMode === 'break'); // Reset isBreakTime when timer resets
-        }
-    }, [resetTimer, timerMode]);
 
     let timesUpMsg = timerMode === 'pomo' ? 'Time for a break' : 'Back to work!';
     let timeText = timeLeft === '0:00' ? timesUpMsg : timeLeft;
@@ -79,7 +68,6 @@ const TimerDisplay = ({
 
     return (
         <div className='main-display'>
-            <CheckPomodoroButtons focusLost={focusLost} completedPomodoros={completedPomodoros} handlePomodoroCheck={handlePomodoroCheck} />
             <div className="timer" onClick={handleClick}>
                 <div className="timer__display">
                     <CircularProgressbarWithChildren
@@ -87,7 +75,7 @@ const TimerDisplay = ({
                         text={timeText}
                         strokeWidth={5}
                         styles={buildStyles({
-                            pathTransitionDuration: 0.9,
+                            pathTransitionDuration: 0.8,
                             pathColor: progressBarColor,
                             textColor: 'var(--timer-text)',
                             dominantBaseline: 'unset',
