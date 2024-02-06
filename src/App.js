@@ -3,14 +3,15 @@ import './App.css';
 import TimerDisplay from './components/TimerDisplay';
 import Button from './components/Button';
 import Settings from './components/Settings';
-import RenderButtons from './components/CheckPomodoroButtons';
 import resetSound from './assets/audio/slide.mp3';
 import '@fortawesome/fontawesome-free/css/all.css';
+import CheckPomodoroButtons from './components/CheckPomodoroButtons';
+
 
 function App() {
-  const initialPomoLength = 1;
-  const initialShortLength = 1;
-  const initialLongLength = 3;
+  const initialPomoLength = 0.10;
+  const initialShortLength = 0.10;
+  const initialLongLength = 0.20;
   const initialFontPref = 'kumbh';
   const initialAccentColor = 'default';
 
@@ -23,14 +24,10 @@ function App() {
   const [accentColor, setAccentColor] = useState(initialAccentColor);
   const [secondsLeft, setSecondsLeft] = useState(pomoLength * 60);
   const [isActive, setIsActive] = useState(false);
-  const [buttonText, setButtonText] = useState('START');
   const [completedPomodoros, setCompletedPomodoros] = useState(Array(5).fill(false));
   const [cycleIndex, setCycleIndex] = useState(0);
-
-  const initialProgressBarColor = 'var(--accent-color)';
-
-  // Inside the App component
-  const [progressBarColor, setProgressBarColor] = useState(initialProgressBarColor);
+  const [resetState, setResetState] = useState(false);
+  const [focusLost, setFocusLost] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -51,21 +48,18 @@ function App() {
     setTimerMode('pomo');
     setSecondsLeft(pomoLength * 60);
     setIsActive(true);
-    setButtonText('STARTED');
   };
 
   const startShortBreak = () => {
     setTimerMode('short');
     setSecondsLeft(shortLength * 60);
     setIsActive(true);
-    setButtonText('SHORT BREAK');
   };
 
   const startLongBreak = () => {
     setTimerMode('long');
     setSecondsLeft(longLength * 60);
     setIsActive(true);
-    setButtonText('LONG BREAK');
   };
 
   const resetCycle = () => {
@@ -98,15 +92,13 @@ function App() {
         return updatedPomodoros;
       });
 
-      if (completedPomodoros.filter(Boolean).length < 5) {
+      if (completedPomodoros.filter(Boolean).length < 4) { 
         startShortBreak();
       }
       else {
-        setCompletedPomodoros(Array(5).fill(false));
-        resetCycle();
+        startLongBreak();
       }
-    }
-    else if (timerMode === 'short') {
+    } else if (timerMode === 'short') {
       setCycleIndex(prevIndex => prevIndex + 1);
 
       if (cycleIndex < 4) {
@@ -116,8 +108,9 @@ function App() {
         startLongBreak();
       }
     }
-    else if (timerMode === 'long') {
+    else if (timerMode === 'long' && secondsLeft === 0) {
       resetCycle();
+      setCompletedPomodoros(Array(5).fill(false));
     }
   };
 
@@ -139,7 +132,6 @@ function App() {
       return (secondsLeft / (longLength * 60)) * 100;
     }
   };
-
   const resetApp = () => {
     const audio = new Audio(resetSound);
     audio.play();
@@ -152,26 +144,35 @@ function App() {
     setAccentColor(initialAccentColor);
     setSecondsLeft(initialPomoLength * 60);
     setIsActive(false);
-    setButtonText('START');
-    setCompletedPomodoros(Array(5).fill(false));
     setCycleIndex(0);
+    setResetState(prevResetState => !prevResetState);
+    setCompletedPomodoros(Array(5).fill(false));
   };
 
   return (
     <div className="pomodoro-app">
       <header><h1>Pomodoro Timer</h1></header>
+      <CheckPomodoroButtons
+        completedPomodoros={completedPomodoros}
+        setCompletedPomodoros={setCompletedPomodoros}
+        handlePomodoroCheck={handlePomodoroCheck}
+        resetState={resetState}
+        isActive={isActive}
+        timerMode={timerMode}
+      />
+
       <TimerDisplay
         timerMode={timerMode}
         percentage={calcPercentage()}
         timeLeft={formatTimeLeft(secondsLeft)}
         isActive={isActive}
         setIsActive={setIsActive}
-        buttonText={buttonText}
-        setButtonText={setButtonText}
         pomoLength={pomoLength}
         shortBreakLength={shortLength}
         longBreakLength={longLength}
         onComplete={handlePhaseCompletion}
+        resetState={resetState}
+        setResetState={setResetState}
       />
 
       <Button type="settings" toggleVisibility={toggleSettingsVisibility} />
