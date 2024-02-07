@@ -64,7 +64,7 @@ const TimerDisplay = ({
     let displayMessage = timerMode === 'pomo' ? 'WORK TIME' : 'ENJOY YOUR BREAK';
     let progressBarColor = red ? '#FD6C7A' : 'var(--accent-color)';
 
-    const circumference = 2 * Math.PI * 42;
+    const circumference = 2 * Math.PI * 45;
     const dashOffset = ((100 - percentage) / 100) * circumference;
 
     return (
@@ -73,7 +73,7 @@ const TimerDisplay = ({
                 <svg className="circular-progress" viewBox="0 0 100 100">
                     <circle
                         className="circular-progress__background"
-                        r="42"
+                        r="45"
                         cx="50"
                         cy="50"
                         stroke="var(--stroke-trail-color)"
@@ -81,7 +81,7 @@ const TimerDisplay = ({
                     />
                     <circle
                         className="circular-progress__foreground"
-                        r="42"
+                        r="45"
                         cx="50"
                         cy="50"
                         style={{

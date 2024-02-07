@@ -120,11 +120,11 @@ h1 {
 
 .circular-progress__foreground {
   fill: none;
+  transition: ease-in-out 0.8s;
 }
 
 .circular-progress__text {
-  font-size: 28px;
-  font-family: Arial, sans-serif;
+  font-size: 24px;
   fill: var(--timer-text);
 }
 
@@ -133,10 +133,6 @@ h1 {
   margin-top: 10px;
   font-size: 16px;
   color: #777;
-}
-
-.circular-progress__foreground {
-  transition: ease-in-out 0.8s;
 }
 
 .display__failed-message,
@@ -447,7 +443,7 @@ input {
   color: #ffffff;
 }
 
-@media screen and (min-width: 768px) {
+@media screen and (min-width: 769px) {
   h1 {
     font-size: 32px;
     line-height: 32px;
