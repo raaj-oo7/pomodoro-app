@@ -83,8 +83,7 @@ h1 {
   cursor: pointer;
 }
 
-.completed .fa-check,
-.fa-times {
+.svg-icon{
   color: #ffffff;
 }
 
