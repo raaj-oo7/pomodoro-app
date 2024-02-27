@@ -17,7 +17,7 @@ function App() {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden' && isActive && timerMode === 'work') {
-        setTimerMode(workTime);
+        setTimerMode("work");
         setIsActive(false);
         setIsFocused(false);
       }
