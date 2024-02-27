@@ -1,199 +1,71 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import TimerDisplay from './components/TimerDisplay';
-import Button from './components/Button';
-import Settings from './components/Settings';
-import resetSound from './assets/audio/slide.mp3';
-import '@fortawesome/fontawesome-free/css/all.css';
-import CheckPomodoroButtons from './components/CheckPomodoroButtons';
-
+import PomodoroCycle from './components/PomodoroCycle';
+import ResetButton from './components/ResetButton';
+import ProgressIndicators from './components/ProgressIndicators';
 
 function App() {
-  const initialPomoLength = 0.10;
-  const initialShortLength = 0.10;
-  const initialLongLength = 0.20;
-  const initialFontPref = 'kumbh';
-  const initialAccentColor = 'default';
+  const workTime = 0.2 * 60;
 
-  const [settingsVisible, setSettingsVisible] = useState(false);
-  const [timerMode, setTimerMode] = useState('pomo');
-  const [pomoLength, setPomoLength] = useState(initialPomoLength);
-  const [shortLength, setShortLength] = useState(initialShortLength);
-  const [longLength, setLongLength] = useState(initialLongLength);
-  const [fontPref, setFontPref] = useState(initialFontPref);
-  const [accentColor, setAccentColor] = useState(initialAccentColor);
-  const [secondsLeft, setSecondsLeft] = useState(pomoLength * 60);
+  const [isFocused, setIsFocused] = useState(true);
   const [isActive, setIsActive] = useState(false);
-  const [completedPomodoros, setCompletedPomodoros] = useState(Array(5).fill(false));
-  const [cycleIndex, setCycleIndex] = useState(0);
-  const [resetState, setResetState] = useState(false);
-  const [focusLost, setFocusLost] = useState(false);
+  const [isCycleSuccess, setIsCycleSuccess] = useState(false);
+  const [completedWorkCycles, setCompletedWorkCycles] = useState(0);
+  const [timerMode, setTimerMode] = useState("work");
+  const [timer, setTimer] = useState(workTime);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (isActive) {
-        setSecondsLeft(prevSecondsLeft => prevSecondsLeft - 1);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && isActive && timerMode === 'work') {
+        setTimerMode(workTime);
+        setIsActive(false);
+        setIsFocused(false);
       }
-    }, 1000);
+    };
 
-    if (secondsLeft === 0) {
-      clearInterval(interval);
-      handlePhaseCompletion();
-    }
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    return () => clearInterval(interval);
-  }, [isActive, secondsLeft]);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isActive, timerMode, workTime]);
 
-  const startPomoPhase = () => {
-    setTimerMode('pomo');
-    setSecondsLeft(pomoLength * 60);
-    setIsActive(true);
+  const handleToggleTimer = () => {
+    setIsActive(!isActive);
   };
 
-  const startShortBreak = () => {
-    setTimerMode('short');
-    setSecondsLeft(shortLength * 60);
-    setIsActive(true);
-  };
-
-  const startLongBreak = () => {
-    setTimerMode('long');
-    setSecondsLeft(longLength * 60);
-    setIsActive(true);
-  };
-
-  const resetCycle = () => {
-    setTimerMode('pomo');
-    setCompletedPomodoros(Array(5).fill(false));
-    setCycleIndex(0);
-    startPomoPhase();
-  };
-
-  const toggleSettingsVisibility = () => {
-    setSettingsVisible(!settingsVisible);
-  };
-
-  const formatTimeLeft = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
-  };
-
-  const handlePhaseCompletion = () => {
-    if (timerMode === 'pomo') {
-      setCompletedPomodoros(prevCompletedPomodoros => {
-        const updatedPomodoros = [...prevCompletedPomodoros];
-        const completedCount = updatedPomodoros.filter(Boolean).length;
-
-        if (completedCount < 5) {
-          updatedPomodoros[completedCount] = true;
-        }
-
-        return updatedPomodoros;
-      });
-
-      if (completedPomodoros.filter(Boolean).length < 4) { 
-        startShortBreak();
-      }
-      else {
-        startLongBreak();
-      }
-    } else if (timerMode === 'short') {
-      setCycleIndex(prevIndex => prevIndex + 1);
-
-      if (cycleIndex < 4) {
-        startPomoPhase();
-      } else {
-        setCycleIndex(0);
-        startLongBreak();
-      }
-    }
-    else if (timerMode === 'long' && secondsLeft === 0) {
-      resetCycle();
-      setCompletedPomodoros(Array(5).fill(false));
-    }
-  };
-
-  const handlePomodoroCheck = (index) => {
-    // Allow checking off only the last completed pomodoro
-    if (index === completedPomodoros.filter(Boolean).length - 1) {
-      const updatedPomodoros = [...completedPomodoros];
-      updatedPomodoros[index] = !updatedPomodoros[index];
-      setCompletedPomodoros(updatedPomodoros);
-    }
-  };
-
-  const calcPercentage = () => {
-    if (timerMode === 'pomo') {
-      return (secondsLeft / (pomoLength * 60)) * 100;
-    } else if (timerMode === 'short') {
-      return (secondsLeft / (shortLength * 60)) * 100;
-    } else if (timerMode === 'long') {
-      return (secondsLeft / (longLength * 60)) * 100;
-    }
-  };
-  const resetApp = () => {
-    const audio = new Audio(resetSound);
-    audio.play();
-
-    setTimerMode('pomo');
-    setPomoLength(initialPomoLength);
-    setShortLength(initialShortLength);
-    setLongLength(initialLongLength);
-    setFontPref(initialFontPref);
-    setAccentColor(initialAccentColor);
-    setSecondsLeft(initialPomoLength * 60);
+  const handleResetTimer = () => {
     setIsActive(false);
-    setCycleIndex(0);
-    setResetState(prevResetState => !prevResetState);
-    setCompletedPomodoros(Array(5).fill(false));
+    setIsFocused(true);
+    setIsCycleSuccess(false);
+    setCompletedWorkCycles(0);
+    setTimerMode("work"); 
+    setTimer(workTime); 
+  };
+
+  const handleCycleCompletion = () => {
+    setIsCycleSuccess(true);
+    setCompletedWorkCycles(prev => prev + 1);
+    console.log("raj")
   };
 
   return (
     <div className="pomodoro-app">
       <header><h1>Pomodoro Timer</h1></header>
-      <CheckPomodoroButtons
-        completedPomodoros={completedPomodoros}
-        setCompletedPomodoros={setCompletedPomodoros}
-        handlePomodoroCheck={handlePomodoroCheck}
-        resetState={resetState}
+
+      <ProgressIndicators completedCycles={completedWorkCycles} />
+
+      <PomodoroCycle
+        isFocused={isFocused}
         isActive={isActive}
+        handleToggleTimer={handleToggleTimer}
+        onCycleCompletion={handleCycleCompletion}
         timerMode={timerMode}
+        setTimerMode={setTimerMode}
+        timer={timer}
       />
 
-      <TimerDisplay
-        timerMode={timerMode}
-        percentage={calcPercentage()}
-        timeLeft={formatTimeLeft(secondsLeft)}
-        isActive={isActive}
-        setIsActive={setIsActive}
-        pomoLength={pomoLength}
-        shortBreakLength={shortLength}
-        longBreakLength={longLength}
-        onComplete={handlePhaseCompletion}
-        resetState={resetState}
-        setResetState={setResetState}
-      />
-
-      <Button type="settings" toggleVisibility={toggleSettingsVisibility} />
-      <Settings
-        visible={settingsVisible}
-        toggleSettingsVisibility={toggleSettingsVisibility}
-        pomoLength={pomoLength}
-        setPomoLength={setPomoLength}
-        shortLength={shortLength}
-        setShortLength={setShortLength}
-        longLength={longLength}
-        setLongLength={setLongLength}
-        fontPref={fontPref}
-        setFontPref={setFontPref}
-        accentColor={accentColor}
-        setAccentColor={setAccentColor}
-        closeSettings={toggleSettingsVisibility}
-        setSecondsLeft={setSecondsLeft}
-        timerMode={timerMode}
-      />
-      <button className="reset-button" onClick={resetApp}>Reset App</button>
+      <ResetButton handleReset={handleResetTimer} />
     </div>
   );
 }
