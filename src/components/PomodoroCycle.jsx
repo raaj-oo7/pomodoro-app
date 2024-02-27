@@ -8,34 +8,29 @@ const PomodoroCycle = ({
   timerMode,
   setTimerMode,
 }) => {
-  const workTime = 0.2 * 60;
+  const workTime = 0.1 * 60;
   const shortBreakTime = 0.1 * 60;
-  const longBreakTime = 0.3 * 60;
+  const longBreakTime = 0.2 * 60;
 
-  const [timer, setTimer] = useState(workTime);
-  const [workCyclesCompleted, setWorkCyclesCompleted] = useState(0);
-
-  useEffect(() => {
-    setTimer(getInitialTimer(timerMode));
-  }, [workTime]);
-
-  useEffect(() => {
-    let intervalId;
-
-    if (isActive && timer > 0) {
-      intervalId = setInterval(() => {
-        setTimer((prevTimer) => (prevTimer > 0 ? prevTimer - 1 : 0));
-      }, 1000);
-    } else if (timer === 0) {
-      handleCyclePhase();
+    const getInitialTimer = (mode) => {
+    switch (mode) {
+      case "work":
+        return workTime;
+      case "shortBreak":
+        return shortBreakTime;
+      case "longBreak":
+        return longBreakTime;
+      default:
+        return workTime;
     }
+  };
 
-    return () => clearInterval(intervalId);
-  }, [isActive, timer, timerMode]);
+  const [timer, setTimer] = useState(getInitialTimer(workTime));
+  const [workCyclesCompleted, setWorkCyclesCompleted] = useState(1);
 
   const handleCyclePhase = () => {
     if (timerMode === "work") {
-      if (workCyclesCompleted < 4) {
+      if (workCyclesCompleted < 5) {
         setWorkCyclesCompleted((prevCount) => prevCount + 1);
         setTimerMode("shortBreak");
         setTimer(shortBreakTime);
@@ -53,25 +48,26 @@ const PomodoroCycle = ({
     }
   };
 
+  useEffect(() => {
+    let intervalId;
+
+    if (isActive && timer > 0) {
+      intervalId = setInterval(() => {
+        setTimer((prevTimer) => (prevTimer > 0 ? prevTimer - 1 : 0));
+      }, 1000);
+    } else if (timer === 0) {
+      handleCyclePhase();
+    }
+
+    return () => clearInterval(intervalId);
+  }, [isActive, timer, timerMode, handleCyclePhase]);
+
   const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
     const seconds = time % 60;
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
-
-  const getInitialTimer = (mode) => {
-    switch (mode) {
-      case "work":
-        return workTime;
-      case "shortBreak":
-        return shortBreakTime;
-      case "longBreak":
-        return longBreakTime;
-      default:
-        return workTime;
-    }
-  };
-
+ 
   const timerModes = {
     work: {
       duration: workTime,
